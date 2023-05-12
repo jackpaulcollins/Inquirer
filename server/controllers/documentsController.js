@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-console */
 /* eslint-disable consistent-return */
@@ -14,6 +15,7 @@ import { fileURLToPath } from 'url';
 import { OpenAI } from 'langchain/llms/openai';
 import { RetrievalQAChain } from 'langchain/chains';
 import Document from '../models/Document.js';
+import { Queryable } from '../models/Queryable.js';
 
 const buildAndSaveVectorStore = async (filePath, VECTOR_STORE_PATH, textParam = null) => {
   let text = textParam;
@@ -126,9 +128,26 @@ export const queryDocument = async (req, res) => {
   try {
     const { question } = req.body;
     const document = await Document.findByPk(req.params.id);
+    const { user_id } = document;
+
+    await Queryable.create({
+      document_id: document.id,
+      content: question,
+      user_id,
+      queryable_type: 'question',
+    });
+
     const VECTOR_STORE_PATH = buildVectorStorePath(document.title);
     const vectorStore = await loadVectorStore(VECTOR_STORE_PATH);
     const answer = await queryVectorStore(vectorStore, question);
+
+    await Queryable.create({
+      document_id: document.id,
+      content: answer.text,
+      user_id,
+      queryable_type: 'answer',
+    });
+
     res.status(200).json({ answer });
   } catch (error) {
     res.status(500).json({ error });
