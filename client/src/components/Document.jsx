@@ -1,70 +1,48 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { useState, useEffect } from 'react';
+import React, {
+  useState, useEffect, useContext,
+} from 'react';
 import { useParams } from 'react-router-dom';
-import { Document, Page, pdfjs } from 'react-pdf';
+// eslint-disable-next-line import/extensions
+import { UserContext } from '../contexts/userContext.js';
 import api from '../utils/api';
+import QueryHistory from './QueryHistory';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+import DocumentDisplay from './DocumentDisplay';
 
 function DocumentViewer() {
   const [documentContent, setDocumentContent] = useState('');
   const [documentType, setDocumentType] = useState('');
-  const [numPages, setNumPages] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  const [queryables, setQueryables] = useState(null);
   const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const { id } = useParams();
+  const { userContextValue } = useContext(UserContext);
 
-  const determineDocumentType = (type) => {
-    if (type === 'text/plain') {
-      return 'text';
-    } if (type === 'application/pdf') {
-      return 'pdf';
-    }
-    return 'unknown';
-  };
-
-  const onDocumentLoadSuccess = ({ numPages: nextNumPages }) => {
-    setNumPages(nextNumPages);
-    setPageNumber(1);
-  };
-
-  const goToNextPage = () => {
-    if (pageNumber < numPages) {
-      setPageNumber(pageNumber + 1);
-    }
-  };
-
-  const goToPrevPage = () => {
-    if (pageNumber > 1) {
-      setPageNumber(pageNumber - 1);
-    }
+  const fetchQueryables = async () => {
+    const response = await api.get(`/documents/${id}/queryables?userId=${userContextValue.userId}`, {
+      data: { userId: userContextValue.userId },
+    });
+    const queryableResponse = response.data;
+    setQueryables(queryableResponse.queryables);
   };
 
   const queryDocument = async (e) => {
+    setIsTyping(true);
     e.preventDefault();
-    setLoading(true);
-    const response = await api.post(`/documents/${id}/query`, {
+    await api.post(`/documents/${id}/query`, {
       question,
     });
-
-    const answerResponse = response.data.answer.text;
-    setAnswer(answerResponse);
-    setLoading(false);
-  };
-
-  const options = {
-    cMapUrl: 'cmaps/',
-    standardFontDataUrl: 'standard_fonts/',
+    setIsTyping(false);
+    fetchQueryables();
   };
 
   useEffect(() => {
-    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
-
     const fetchDocumentUrl = async () => {
       const response = await api.get(`/documents/${id}`, {
         responseType: 'blob',
+        data: { userId: userContextValue.userId },
       });
 
       const { type } = response.data;
@@ -90,88 +68,34 @@ function DocumentViewer() {
     };
 
     fetchDocumentUrl();
-  }, [id]);
+    fetchQueryables();
+  }, []);
 
   const querySection = () => (
-    <>
-      <form className="mt-20" onSubmit={queryDocument}>
+    <div>
+      <QueryHistory queryables={queryables} isTyping={isTyping} />
+      <form className="mt-2" onSubmit={queryDocument}>
         <div className="mb-6">
           <label htmlFor="question" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             <input value={question} onChange={(e) => setQuestion(e.target.value)} type="text" id="question" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="...query your document" required />
           </label>
         </div>
         <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+        <div className="flex flex-col gap-4" />
       </form>
-      {loading ? (
-        <div className="border border-blue-300 shadow rounded-md p-4 max-w-sm w-full mx-auto">
-          <div className="animate-pulse flex space-x-4">
-            <div className="rounded-full bg-slate-700 h-10 w-10" />
-            <div className="flex-1 space-y-6 py-1">
-              <div className="h-2 bg-slate-700 rounded" />
-              <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="h-2 bg-slate-700 rounded col-span-2" />
-                  <div className="h-2 bg-slate-700 rounded col-span-1" />
-                </div>
-                <div className="h-2 bg-slate-700 rounded" />
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        answer && (
-          <p>
-            <div className="border border-blue-300 shadow rounded-md p-4 max-w-sm w-full mx-auto">
-              {answer}
-            </div>
-          </p>
-        )
-      )}
-    </>
+    </div>
   );
 
-  if (documentType) {
-    const type = determineDocumentType(documentType);
-
-    if (type === 'text') {
-      return (
-        <div className="inline-flex flex-shrink-0 mt-8 items-center rounded-md px-2 py-2 text-xs font-medium text-green-700 ring-2 ring-green-600/20" style={{ height: '800px', overflow: 'auto' }}>
-          {documentContent}
-        </div>
-      );
-    } if (documentContent && type === 'pdf') {
-      return (
-        <div className=" w-full mx-auto flex flex-row">
-          <Document file={documentContent} onLoadSuccess={onDocumentLoadSuccess} options={options}>
-            <Page pageNumber={pageNumber} />
-            <div className="w-1/4 m-auto flex flex-col items-center">
-              <div className="inline-flex">
-                <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" onClick={goToPrevPage}>Prev</button>
-                <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r" onClick={goToNextPage}>Next</button>
-              </div>
-              <p>
-                {' '}
-                {pageNumber}
-                {' '}
-                of
-                {' '}
-                {numPages}
-              </p>
-            </div>
-          </Document>
-          <div className=" w-1/2 flex flex-col ml-4">
-            {querySection()}
-          </div>
-        </div>
-      );
-    }
-    return (
-      <div className="inline">
-        Unknown document type
+  return (
+    <div className=" w-full flex flex-row">
+      <div className="w-1/2">
+        <DocumentDisplay documentContent={documentContent} documentType={documentType} />
       </div>
-    );
-  }
-  return null;
+      <div className="flex flex-col w-1/2">
+        {querySection()}
+      </div>
+    </div>
+  );
 }
 
 export default DocumentViewer;

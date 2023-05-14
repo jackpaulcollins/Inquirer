@@ -73,11 +73,9 @@ const maybeExtractPdfText = async (file) => {
   try {
     const ext = file.document_type;
     if (ext === 'application/pdf') {
-      // Extract text from PDF file
       const data = await pdfToText(file.path);
       return data;
     }
-    // For non-PDF files, return null
     return null;
   } catch (error) {
     if (error.includes('Permission Error')) {
@@ -157,6 +155,14 @@ export const queryDocument = async (req, res) => {
 export const getDocument = async (req, res) => {
   const document = await Document.findByPk(req.params.id);
   res.download(document.path);
+};
+
+export const getQueryables = async (req, res) => {
+  const { userId } = req.query;
+  const queryables = await Queryable.findAll({
+    where: { document_id: req.params.id, user_id: userId },
+  });
+  res.json({ queryables });
 };
 
 export const getDocuments = async (req, res) => {

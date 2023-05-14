@@ -20,6 +20,10 @@ function Login() {
     setFlashMessage(null);
   };
 
+  const clearErrorMessage = () => {
+    setErrorMessage(null);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -28,6 +32,7 @@ function Login() {
       clearFlashMessage();
       window.location.href = '/';
     } catch (error) {
+      console.log(error);
       setErrorMessage(error.response.status);
     }
   };
@@ -45,6 +50,17 @@ function Login() {
               </svg>
             </span>
           </div>
+        )}
+        {errorMessage && (
+        <div className="mt-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <span className="block sm:inline">{errorMessage}</span>
+          <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <svg onClick={() => clearErrorMessage()} className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <title>Close</title>
+              <path d="M14.95 5.37l-.92-.92L10 9.08 5.97 4.45l-.92.92L9.08 10l-4.63 4.03.92.92L10 10.92l4.03 4.63.92-.92L10.92 10l4.03-4.63z" />
+            </svg>
+          </span>
+        </div>
         )}
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
           Sign in to your account
@@ -91,7 +107,6 @@ function Login() {
             >
               Sign in
             </button>
-            <span>{errorMessage}</span>
           </div>
         </form>
       </div>

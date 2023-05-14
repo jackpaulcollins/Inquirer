@@ -1,26 +1,29 @@
 /* eslint-disable no-console */
 import React, { useState } from 'react';
+import api from '../utils/api';
 
 function Signup() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    const response = await fetch('/api/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, username, password }),
-    });
-
-    if (response.ok) {
+    try {
+      const response = await api.post('/auth/signup', { email, username, password });
       const data = await response.json();
       localStorage.setItem('token', data.token);
-    } else {
-      console.log('Invalid username or password');
+      window.location.href = '/';
+    } catch (error) {
+      console.log(error.response.data.error);
+      setErrorMessage(error.response.data.error);
     }
+  };
+
+  const clearErrorMessage = () => {
+    setErrorMessage(null);
   };
 
   return (
@@ -34,6 +37,17 @@ function Signup() {
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
           Sign up for an account
         </h2>
+        {errorMessage && (
+          <div className="mt-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <span className="block sm:inline">{errorMessage}</span>
+            <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
+              <svg onClick={() => clearErrorMessage()} className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <title>Close</title>
+                <path d="M14.95 5.37l-.92-.92L10 9.08 5.97 4.45l-.92.92L9.08 10l-4.63 4.03.92.92L10 10.92l4.03 4.63.92-.92L10.92 10l4.03-4.63z" />
+              </svg>
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">

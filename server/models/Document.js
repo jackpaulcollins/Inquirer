@@ -1,4 +1,5 @@
 import { DataTypes } from 'sequelize';
+import { Queryable } from './Queryable.js';
 import sequelize from '../db.js';
 
 const Document = sequelize.define('Document', {
@@ -20,11 +21,6 @@ const Document = sequelize.define('Document', {
   },
 });
 
-Document.associate = (models) => {
-  Document.belongsTo(models.User, {
-    name: 'user_id',
-    allowNull: false,
-  });
-};
+Document.hasMany(Queryable, { foreignKey: 'document_id', onDelete: 'CASCADE' });
 
 export default Document;

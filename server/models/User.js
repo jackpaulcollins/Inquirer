@@ -13,10 +13,21 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
+    validate: {
+      isEmail: {
+        msg: 'Invalid email address',
+      },
+    },
   },
   password: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      len: {
+        args: [8, 20],
+        msg: 'Password must be at least 8 characters long',
+      },
+    },
   },
 });
 
