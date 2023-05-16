@@ -87,11 +87,11 @@ function DocumentViewer() {
   );
 
   return (
-    <div className=" w-full flex flex-row">
-      <div className="w-1/2">
+    <div className=" w-9/12 m-auto mt-4 flex flex-row">
+      <div className="w-3/5">
         <DocumentDisplay documentContent={documentContent} documentType={documentType} />
       </div>
-      <div className="flex flex-col w-1/2">
+      <div className="mr-4 p-8 flex flex-col w-2/5 shadow-md rounded-md">
         {querySection()}
       </div>
     </div>

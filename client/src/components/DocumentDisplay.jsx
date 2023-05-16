@@ -42,15 +42,15 @@ function DocumentDisplay({ documentType, documentContent }) {
     );
   } if (documentContent && documentType === 'application/pdf') {
     return (
-      <div className=" w-full mx-auto flex flex-row">
+      <div className="w-full flex flex-row">
         <Document file={documentContent} onLoadSuccess={onDocumentLoadSuccess} options={options}>
           <Page pageNumber={pageNumber} />
-          <div className="w-1/4 m-auto flex flex-col items-center">
+          <div className="w-1/4 mt-4 m-auto flex flex-col items-center">
             <div className="inline-flex">
-              <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" onClick={goToPrevPage}>Prev</button>
-              <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r" onClick={goToNextPage}>Next</button>
+              <button type="button" className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-l" onClick={goToPrevPage}>Prev</button>
+              <button type="button" className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-r" onClick={goToNextPage}>Next</button>
             </div>
-            <p>
+            <p className="mt-2">
               {' '}
               {pageNumber}
               {' '}

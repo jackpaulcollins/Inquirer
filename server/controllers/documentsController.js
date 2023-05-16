@@ -67,6 +67,13 @@ const queryVectorStore = async (vectorStore, question) => {
   }
 };
 
+// const updateVectorStoreWithFeedback = async (feedback, VECTOR_STORE_PATH) => {
+//   const textSplitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000 });
+//   const docs = await textSplitter.createDocuments([feedback]);
+//   const vectorStore = await HNSWLib.load(VECTOR_STORE_PATH, new OpenAIEmbeddings());
+//   await vectorStore.addDocuments(docs);
+// };
+
 const maybeExtractPdfText = async (file) => {
   const pdfToText = util.promisify(pdfUtil.pdfToText);
 
