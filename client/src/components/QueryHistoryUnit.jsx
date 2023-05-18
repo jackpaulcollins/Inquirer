@@ -11,7 +11,7 @@ const formatttedDateTime = (dateTimeStr) => {
   return formattedDate;
 };
 
-function QueryHistoryUnit({ queryableUnit }) {
+function QueryHistoryUnit({ queryableUnit, userId, showFlash }) {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
   const handleReportClick = () => {
@@ -36,7 +36,9 @@ function QueryHistoryUnit({ queryableUnit }) {
       <QueryHistoryUnitFeedbackModal
         queryableUnit={queryableUnit}
         open={isFeedbackModalOpen}
+        userId={userId}
         onClose={() => setIsFeedbackModalOpen(false)}
+        showFlash={showFlash}
       />
     </div>
   );
@@ -51,6 +53,8 @@ QueryHistoryUnit.propTypes = {
     document_id: PropTypes.number,
     createdAt: PropTypes.string.isRequired,
   }).isRequired,
+  userId: PropTypes.number.isRequired,
+  showFlash: PropTypes.func.isRequired,
 };
 
 export default QueryHistoryUnit;

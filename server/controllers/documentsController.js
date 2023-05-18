@@ -16,6 +16,7 @@ import { OpenAI } from 'langchain/llms/openai';
 import { RetrievalQAChain } from 'langchain/chains';
 import Document from '../models/Document.js';
 import { Queryable } from '../models/Queryable.js';
+import { Feedback } from '../models/Feedback.js';
 
 const buildAndSaveVectorStore = async (filePath, VECTOR_STORE_PATH, textParam = null) => {
   let text = textParam;
@@ -135,7 +136,7 @@ export const queryDocument = async (req, res) => {
     const document = await Document.findByPk(req.params.id);
     const { user_id } = document;
 
-    await Queryable.create({
+    const questionRow = await Queryable.create({
       document_id: document.id,
       content: question,
       user_id,
@@ -146,11 +147,14 @@ export const queryDocument = async (req, res) => {
     const vectorStore = await loadVectorStore(VECTOR_STORE_PATH);
     const answer = await queryVectorStore(vectorStore, question);
 
+    console.log(questionRow.id);
+
     await Queryable.create({
       document_id: document.id,
       content: answer.text,
       user_id,
       queryable_type: 'answer',
+      reference_id: questionRow.id,
     });
 
     res.status(200).json({ answer });
@@ -182,6 +186,22 @@ export const getDocuments = async (req, res) => {
       },
     });
     res.json({ documents });
+  } catch (error) {
+    res.status(500).send(`${error}: Internal Server Error`);
+  }
+};
+
+export const handleUserSubmittedFeedback = async (req, res) => {
+  const { answer_id, user_id, feedback } = req.body;
+
+  try {
+    await Feedback.create({
+      answer_id,
+      user_id,
+      feedback,
+    });
+
+    res.status(200).send({message: 'Feedback successfully created'})
   } catch (error) {
     res.status(500).send(`${error}: Internal Server Error`);
   }

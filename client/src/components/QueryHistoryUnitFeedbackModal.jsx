@@ -2,21 +2,29 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Dialog, Transition } from '@headlessui/react';
+import api from '../utils/api';
 
-function QueryHistoryUnitFeedbackModal({ open, queryableUnit, onClose }) {
+function QueryHistoryUnitFeedbackModal({
+  open, queryableUnit, onClose, userId, showFlash,
+}) {
   const [reportText, setReportText] = useState('');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Send the report to the backend or perform any other necessary actions
-    // You can use the report text and the queryable unit's information to construct the report
-    // For this example, we're just logging the report text to the console
-    console.log(reportText);
-    // Close the modal
-    onClose();
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.post(`/documents/${queryableUnit.document_id}/queryables/${queryableUnit.id}/feedback`, {
+        feedback: reportText,
+        answer_id: queryableUnit.id,
+        user_id: userId,
+      });
 
-  console.log(queryableUnit);
+      localStorage.setItem('flashMessage', response.data.message);
+      showFlash();
+      onClose();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
@@ -71,9 +79,8 @@ function QueryHistoryUnitFeedbackModal({ open, queryableUnit, onClose }) {
                       />
                       <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                         <button
-                          type="button"
+                          type="submit"
                           className="inline-flex w-full justify-center rounded-md bg-blue-700 hover:bg-blue-800 px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto"
-                          onClick={onClose}
                         >
                           Submit Correction
                         </button>
@@ -138,6 +145,8 @@ QueryHistoryUnitFeedbackModal.propTypes = {
   }).isRequired,
   onClose: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
+  userId: PropTypes.number.isRequired,
+  showFlash: PropTypes.func.isRequired,
 };
 
 export default QueryHistoryUnitFeedbackModal;
