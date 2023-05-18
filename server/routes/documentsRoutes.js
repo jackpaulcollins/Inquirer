@@ -4,7 +4,12 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {
-  getDocument, getDocuments, uploadDocument, queryDocument, getQueryables,
+  getDocument,
+  getDocuments,
+  uploadDocument,
+  queryDocument,
+  getQueryables,
+  handleUserSubmittedFeedback,
 } from '../controllers/documentsController.js';
 import { verifyToken } from '../utils/verifyToken.js';
 
@@ -30,6 +35,7 @@ const upload = multer({ storage });
 documentsRouter.post('/upload', verifyToken, upload.single('document'), uploadDocument);
 documentsRouter.get('/:id', verifyToken, getDocument);
 documentsRouter.get('/:id/queryables', verifyToken, getQueryables);
+documentsRouter.post('/:id/queryables/:id/feedback', verifyToken, handleUserSubmittedFeedback);
 documentsRouter.post('/', verifyToken, getDocuments);
 documentsRouter.post('/:id/query', verifyToken, queryDocument);
 

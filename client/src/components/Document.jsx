@@ -11,10 +11,12 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import DocumentDisplay from './DocumentDisplay';
 
-function DocumentViewer() {
+function Document() {
   const [documentContent, setDocumentContent] = useState('');
   const [documentType, setDocumentType] = useState('');
   const [queryables, setQueryables] = useState(null);
+  const [flashMessage, setFlashMessage] = useState(null);
+  const [showFlash, setShowFlash] = useState(false);
   const [question, setQuestion] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const { id } = useParams();
@@ -28,6 +30,15 @@ function DocumentViewer() {
     setQueryables(queryableResponse.queryables);
   };
 
+  const clearFlashMessage = () => {
+    setFlashMessage(null);
+    setShowFlash(false);
+  };
+
+  const shouldShowFlash = () => {
+    setShowFlash(true);
+  };
+
   const queryDocument = async (e) => {
     setIsTyping(true);
     e.preventDefault();
@@ -36,9 +47,19 @@ function DocumentViewer() {
     });
     setIsTyping(false);
     fetchQueryables();
+    setQuestion('');
   };
 
   useEffect(() => {
+    const flash = localStorage.getItem('flashMessage');
+    if (flash && showFlash) {
+      setFlashMessage(flash);
+
+      setTimeout(() => {
+        clearFlashMessage();
+      }, 3000);
+    }
+
     const fetchDocumentUrl = async () => {
       const response = await api.get(`/documents/${id}`, {
         responseType: 'blob',
@@ -69,11 +90,16 @@ function DocumentViewer() {
 
     fetchDocumentUrl();
     fetchQueryables();
-  }, []);
+  }, [showFlash]);
 
   const querySection = () => (
     <div>
-      <QueryHistory queryables={queryables} isTyping={isTyping} />
+      <QueryHistory
+        queryables={queryables}
+        isTyping={isTyping}
+        userId={userContextValue.userId}
+        showFlash={shouldShowFlash}
+      />
       <form className="mt-2" onSubmit={queryDocument}>
         <div className="mb-6">
           <label htmlFor="question" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -87,15 +113,28 @@ function DocumentViewer() {
   );
 
   return (
-    <div className=" w-full flex flex-row">
-      <div className="w-1/2">
-        <DocumentDisplay documentContent={documentContent} documentType={documentType} />
+    <div>
+      { flashMessage && (
+      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+        <span className="block sm:inline">{flashMessage}</span>
+        <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
+          <svg onClick={() => clearFlashMessage()} className="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <title>Close</title>
+            <path d="M14.95 5.37l-.92-.92L10 9.08 5.97 4.45l-.92.92L9.08 10l-4.63 4.03.92.92L10 10.92l4.03 4.63.92-.92L10.92 10l4.03-4.63z" />
+          </svg>
+        </span>
       </div>
-      <div className="flex flex-col w-1/2">
-        {querySection()}
+      )}
+      <div className=" w-9/12 m-auto mt-4 flex flex-row">
+        <div className="w-3/5">
+          <DocumentDisplay documentContent={documentContent} documentType={documentType} />
+        </div>
+        <div className="mr-4 p-8 flex flex-col w-2/5 shadow-md rounded-md">
+          {querySection()}
+        </div>
       </div>
     </div>
   );
 }
 
-export default DocumentViewer;
+export default Document;

@@ -26,8 +26,6 @@ function DocumentUpload() {
     navigate(`/documents/${documentId}`);
   };
 
-  if (document) console.log(document.type);
-
   const documentOrForm = () => {
     if (!document) {
       return (
