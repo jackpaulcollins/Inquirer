@@ -201,7 +201,7 @@ export const handleUserSubmittedFeedback = async (req, res) => {
       feedback,
     });
 
-    res.status(200).send({message: 'Feedback successfully created'})
+    res.status(200).send({ message: 'Feedback successfully created' });
   } catch (error) {
     res.status(500).send(`${error}: Internal Server Error`);
   }

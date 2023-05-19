@@ -11,6 +11,8 @@ export const Queryable = sequelize.define('Queryable', {
 });
 
 Queryable.hasMany(Feedback, { foreignKey: 'answer_id' });
-Queryable.hasMany(Queryable, { foreignKey: 'reference_id', as: 'answer' });
+Queryable.hasMany(Queryable, { foreignKey: 'reference_id', as: 'answer', onDelete: 'CASCADE' });
+
+sequelize.sync();
 
 export default Queryable;

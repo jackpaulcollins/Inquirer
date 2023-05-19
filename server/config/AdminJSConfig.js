@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import { Queryable } from '../models/Queryable.js';
 import Document from '../models/Document.js';
 import { Feedback } from '../models/Feedback.js';
+import { processFeedback } from '../admin/utils/processFeedback.js';
 
 const adminJsConfig = {
   resources: [
@@ -35,7 +36,13 @@ const adminJsConfig = {
             component: false,
             handler: async (request, response, context) => {
               const { record } = context;
-              return response.json(record);
+              const res = await processFeedback(record);
+
+              console.log(res);
+              return {
+                record: record.toJSON(),
+                res,
+              };
             },
             guard: "Confirm submission, this can't be undone",
           },

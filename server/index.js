@@ -6,7 +6,9 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 import './passport-config.js';
 import { AdminJS } from 'adminjs';
-import  AdminJSExpress from '@adminjs/express';
+import AdminJSExpress from '@adminjs/express';
+// no idea why it can't resolve this path, the module is imported w/o issue though
+// eslint-disable-next-line import/no-unresolved
 import AdminJSSequelize from '@adminjs/sequelize';
 import authRouter from './routes/authRoutes.js';
 import notesRouter from './routes/notesRoutes.js';

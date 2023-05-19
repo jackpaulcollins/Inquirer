@@ -27,6 +27,7 @@
     "langchain": "^0.0.71",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.2.3",
+    "node-repl": "^2.0.2",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pdf-to-text": "^0.0.7",
